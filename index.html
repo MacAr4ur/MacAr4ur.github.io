@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>李俊 · 战斗策划作品集</title>
+<meta name="description" content="李俊的个人作品集——战斗策划（战斗AI编排方向）。收录战斗AI方案拆解、UE5 Demo、系统拆解案等作品。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ═══════════ Header ═══════════ -->
+  <header class="header">
+    <h1>李俊</h1>
+    <p class="subtitle">战斗策划（战斗AI编排方向） · 南通大学 2027届</p>
+    <p class="contact">📱 17851792986（微信同号）&nbsp;&nbsp;·&nbsp;&nbsp;✉️ 501272096@qq.com</p>
+    <p class="meta">
+      <span>战斗AI编排 · 状态机 / 行为树</span>
+      <span>|</span>
+      <span>UE5 · Godot</span>
+      <span>|</span>
+      <span>Steam 时长 2000h+</span>
+    </p>
+    <p class="intro">
+      本页面为校招求职作品集，收录战斗AI方案拆解、系统拆解报告与个人游戏 Demo。
+      长期关注军事题材 FPS 的战斗表现，希望把这份积累用在真正的抗战题材项目上。
+    </p>
+    <p class="links">
+      <a href="https://github.com/MacAr4ur" target="_blank" rel="noopener">GitHub</a>
+      <span style="color:var(--border);">·</span>
+      <a href="https://space.bilibili.com/" target="_blank" rel="noopener">B站</a>
+      <span style="color:var(--border);">·</span>
+      <a href="mailto:501272096@qq.com">邮箱</a>
+    </p>
+  </header>
+
+  <!-- ═══════════ 项目作品 ═══════════ -->
+  <div class="section-title">
+    作品
+    <span class="count">7 项</span>
+  </div>
+  <div class="projects">
+
+    <!-- 1 ── 《抵抗者》实机PV改进方案 -->
+    <details class="project-card art-expand">
+      <summary>
+        <div class="thumb placeholder" style="background: linear-gradient(135deg, #2f2b28, #4a3a33);">
+          <span class="thumb-label">《抵抗者》<br>PV 改进</span>
+        </div>
+        <div class="info">
+          <div class="name">
+            《抵抗者》实机 PV 战斗 AI 改进方案
+            <span class="badge">★ 主力作品</span>
+          </div>
+          <div class="desc">基于实机 PV 与玩家实机录像，针对突击兵行为、区域难度、战斗演出提出成体系的改进方案，每一条都给出「改进目的 → 具体做法 → 玩家反制路径」。▼ 展开查看摘要</div>
+          <div class="tags">
+            <span class="tag">战斗AI编排</span>
+            <span class="tag">单兵战术</span>
+            <span class="tag">难度曲线</span>
+            <span class="tag">脚本演出</span>
+          </div>
+        </div>
+        <div class="arrow">▼</div>
+      </summary>
+
+      <div class="art-detail">
+        <div>
+          <p><b>项目定位：</b>对《抵抗者》实机 PV 中可观察到的战斗 AI 表现做逐条复盘，输出可交付给项目组的改进方案。出发点不是"这里不好玩"，而是<b>指出具体的编排缺陷 + 给出可落地的编排逻辑</b>。</p>
+
+          <p style="margin-top:14px;"><b>三条主要问题与方案：</b></p>
+          <table>
+            <tr>
+              <th style="width:26%;">观察到的现象</th>
+              <th>改进方案</th>
+            </tr>
+            <tr>
+              <td>突击兵到达目标点位后<b>无掩体干射玩家</b>，站桩感强</td>
+              <td><b>交替掩护跃进</b>——步兵分 2 组，A 组密集火力压制、B 组前出占领位置，两组轮换推进；同时给出玩家反制路径（先打压制者、冲锋枪/机枪反压制、手雷封锁跃进路线）</td>
+            </tr>
+            <tr>
+              <td>玩家端着冲锋枪贴上敌人脸上，敌人<b>仍沿预定道路跑步</b>，不真实</td>
+              <td>在战斗区域划分<b>「危险区」</b>——玩家进入后提升敌人攻击欲与命中率，以此惩罚个人英雄主义；队友语音「不要逞英雄，快回来！」</td>
+            </tr>
+            <tr>
+              <td>COD4 老兵难度下玩家<b>无预兆中弹</b>，只能靠读档试错</td>
+              <td>低难度下给敌人空枪的<b>落点环境音反馈</b>（参考 CODM 狙击弹着音效），提示玩家已暴露在敌方视野，同时增强紧迫感</td>
+            </tr>
+          </table>
+
+          <p style="margin-top:14px;"><b>演出与真实性：</b>队友 AI 脚本演出——手雷落在玩家脚边时触发队友飞身扑雷；参考黄继光挡枪眼为队友赢取机动时间。同时指出<b>滑铲动作脚先进掩体</b>的不合理性（头部最后进入最危险区域），主张在军事题材上「去 COD 化」。</p>
+
+          <p style="margin-top:14px;"><b>压力传递设计：</b>玩家长时间未清除突进中的敌人时，队友按节奏减员并播放中枪音效与语音（「要顶不住啦！」），把战场压力从数值层面转移到情绪层面；敌人抵近至 10～20m 时部分上刺刀发起肉搏。</p>
+
+          <a href="resister-pv.html" class="btn">📄 查看完整方案 →</a>
+        </div>
+      </div>
+    </details>
+
+    <!-- 2 ── 战斗AI的攻击调度 拆解 -->
+    <details class="project-card art-expand">
+      <summary>
+        <div class="thumb">
+          <img class="doc" src="diagrams/攻击调度流程.svg" alt="攻击调度流程图">
+        </div>
+        <div class="info">
+          <div class="name">
+            《战斗 AI 的攻击调度》拆解
+            <span class="badge">★ 战斗AI理论</span>
+          </div>
+          <div class="desc">从「功夫圈」的朴素解法出发，拆解《Kingdoms of Amalur》的网格容量调度系统——用权重与容量统一管理同时攻击人数与攻击强度，并给出 UE5 落点。▼ 展开查看摘要</div>
+          <div class="tags">
+            <span class="tag">Game AI Pro</span>
+            <span class="tag">攻击调度</span>
+            <span class="tag">UE5 落点</span>
+            <span class="tag">难度缩放</span>
+          </div>
+        </div>
+        <div class="arrow">▼</div>
+      </summary>
+
+      <div class="art-detail">
+        <div>
+          <p><b>要解决的问题：</b>遭遇战中多个敌人围攻玩家时，<b>同时攻击的敌人一多，新手会直接被淹没</b>。朴素解法是「一次只允许一个敌人攻击」——即<b>功夫圈（Kung-Fu Circle）</b>，但它的限制在快节奏战斗里太严：节奏被拖慢，且玩家永远没有机会用 AOE，因为敌人从不扎堆。</p>
+
+          <p style="margin-top:12px;">而简单地把限制放宽成"允许 2～3 个同时上"同样是错的——它<b>不区分敌人类型与攻击强度</b>：巨魔的冲锋和杂兵的挥剑，不该被同等对待。</p>
+
+          <p style="margin-top:14px;"><b>核心机制（Belgian AI）：</b>每个角色随身携带一个与世界坐标轴对齐的网格，共 8 个槽位，存储两个变量——</p>
+          <ul>
+            <li><b>网格容量</b>：限制同时能攻击的角色<b>数量</b>（每个生物有一个网格权重）</li>
+            <li><b>攻击容量</b>：限制这些角色能使用的攻击<b>数量与类型</b>（每个攻击有一个攻击权重）</li>
+          </ul>
+          <p>关键在第二条：容量不足时，敌人不是被禁止攻击，而是<b>被限制只能用"便宜"的攻击</b>——系统压的是攻击强度，不只是数量。</p>
+
+          <p style="margin-top:14px;"><b>最优雅的一处设计：</b>圈外等待者会被分配到空缺槽位的前方站位。结果是<b>包抄自然涌现</b>——没有任何一行"包抄行为"代码，它只是定位规则的副产物。</p>
+
+          <p style="margin-top:14px;"><b>难度缩放：</b>整套难度只由玩家侧的两个容量数字控制，<b>完全不用改动每个生物精心平衡过的个体权重</b>。</p>
+
+          <a href="attack-scheduling.html" class="btn">📄 查看完整拆解 →</a>
+        </div>
+      </div>
+    </details>
+
+    <!-- 3 ── UE5 2.5D 战斗练习 -->
+    <a class="project-card" href="https://www.bilibili.com/video/BV1gQ3A6sEsB" target="_blank" rel="noopener">
+      <div class="thumb placeholder" style="background: linear-gradient(135deg, #23282e, #3a4149);">
+        <span class="thumb-label">UE5<br>2.5D 战斗</span>
+      </div>
+      <div class="info">
+        <div class="name">
+          2.5D 视角 UE5 战斗练习项目
+          <span class="badge gray">全栈个人</span>
+        </div>
+        <div class="desc">搭建敌人状态机循环：等待 → 移动（生成后全图追踪玩家）→ 攻击 → 死亡，战斗玩法参考《吸血鬼幸存者》。实现角色行走/攻击/死亡动画、战斗系统基础、建筑关卡搭建、地形材质、程序化植被、光照调整与 Niagara 特效。</div>
+        <div class="tags">
+          <span class="tag">UE5 蓝图</span>
+          <span class="tag">敌人状态机</span>
+          <span class="tag">关卡搭建</span>
+          <span class="tag">Niagara</span>
+        </div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <!-- 4 ── 卡牌肉鸽《梦境回廊》 -->
+    <a class="project-card" href="https://tap.cn/ldDhetBsh" target="_blank" rel="noopener">
+      <div class="thumb placeholder" style="background: linear-gradient(135deg, #2a2438, #453a5c);">
+        <span class="thumb-label">梦境回廊<br>卡牌肉鸽</span>
+      </div>
+      <div class="info">
+        <div class="name">
+          卡牌肉鸽《梦境回廊》
+          <span class="badge gray">策划 / PM</span>
+        </div>
+        <div class="desc">搭建「地图探索 → 战斗 → 卡组构筑」核心循环；设计渐进式肉鸽地图系统，调整 10+ 怪物池与 7 种地标关卡生成机制、50+ 卡牌掉率。负责需求拆解与进度管理，对接 2 程 3 美 2 策。程序缺席期间接手开发，7 天自学 Godot 完成新手教程系统与 bug 修复。</div>
+        <div class="tags">
+          <span class="tag">肉鸽设计</span>
+          <span class="tag">数值平衡</span>
+          <span class="tag">项目管理</span>
+          <span class="tag">TapTap 7.3</span>
+        </div>
+      </div>
+      <div class="arrow">→</div>
+    </a>
+
+    <!-- 5 ── 三国志幻想大陆拆解案 -->
+    <details class="project-card art-expand">
+      <summary>
+        <div class="thumb">
+          <img class="doc" src="diagrams/01-核心循环.svg" alt="三国志幻想大陆核心循环流程图">
+        </div>
+        <div class="info">
+          <div class="name">《三国志幻想大陆》系统拆解案</div>
+          <div class="desc">覆盖核心玩法 / 系统架构 / 资源循环 / 设计评价 / 优化建议五大模块，梳理「无废将」理念与羁绊系统的耦合关系，并给出两条可落地的优化建议。▼ 展开查看摘要</div>
+          <div class="tags">
+            <span class="tag">系统策划</span>
+            <span class="tag">经济模型</span>
+            <span class="tag">养成体系</span>
+          </div>
+        </div>
+        <div class="arrow">▼</div>
+      </summary>
+
+      <div class="art-detail">
+        <div>
+          <p><b>拆解结论：</b>三幻的核心竞争力来自<b>「无废将」理念与羁绊系统的深度耦合</b>——前者降低收集焦虑，后者创造策略空间。走的是"加法"路线：在确保每个系统有独立出口和清晰目标的前提下，持续叠加养成维度。</p>
+
+          <p style="margin-top:12px;"><b>三条设计亮点：</b></p>
+          <ul>
+            <li><b>羁绊系统三层设计</b>：普通羁绊（门槛低）→ 列阵羁绊（策略深）→ 龙魂羁绊（付费深），分层满足不同人群</li>
+            <li><b>双重正反馈</b>：武将升星 → 个体变强，同时更新图鉴 → 全体变强。一次养成行为拿到两次反馈</li>
+            <li><b>文姬助手</b>：10 倍速 + 官方脚本自动刷本。承认这类游戏的日常是"负担"而非"乐趣"，主动帮玩家减负</li>
+          </ul>
+
+          <p style="margin-top:12px;"><b>两条优化建议：</b>① 把旧系统减负与新手引导绑定——每解锁一个新系统，就对旧系统开放一键扫荡，让成长路径从"越玩越累"变成<b>"越成长越轻松"</b>；② 组队讨伐增加<b>补队券</b>机制，解决"组不到人 → 拿不到额外奖励 → 不想打 → 更组不到人"的恶性循环。</p>
+
+          <a href="sanguo-fantasy.html" class="btn">📄 查看完整拆解案 →</a>
+        </div>
+      </div>
+    </details>
+
+    <!-- 6 ── 咸鱼之王 × 三幻 系统对比 -->
+    <details class="project-card art-expand">
+      <summary>
+        <div class="thumb">
+          <img class="doc" src="diagrams/04-核心循环对比.svg" alt="咸鱼之王与三国志幻想大陆核心循环对比图">
+        </div>
+        <div class="info">
+          <div class="name">《咸鱼之王》×《三国志幻想大陆》系统对比</div>
+          <div class="desc">横向对比两款卡牌手游的核心循环、系统架构、养成深度、设计意图与商业化路径，提炼出「做减法」与「做加法」两条截然不同的设计路线。▼ 展开查看摘要</div>
+          <div class="tags">
+            <span class="tag">竞品分析</span>
+            <span class="tag">商业化</span>
+            <span class="tag">养成深度</span>
+          </div>
+        </div>
+        <div class="arrow">▼</div>
+      </summary>
+
+      <div class="art-detail">
+        <div>
+          <p><b>一句话总结：</b>咸鱼之王是"把卡牌养成砍到只剩骨架但玩家依然上瘾"的典范，三幻是"在卡牌框架内把养成深度与策略性做到极致"的标杆。</p>
+
+          <table>
+            <tr>
+              <th style="width:22%;"></th>
+              <th>咸鱼之王</th>
+              <th>三国志幻想大陆</th>
+            </tr>
+            <tr>
+              <td><b>产品定位</b></td>
+              <td>超轻量放置卡牌，碎片化杀时间</td>
+              <td>中度策略卡牌 RPG，长线养成</td>
+            </tr>
+            <tr>
+              <td><b>核心资源驱动</b></td>
+              <td>挂机时长（促进在线时长）</td>
+              <td>体力（促进日活）</td>
+            </tr>
+            <tr>
+              <td><b>养成深度</b></td>
+              <td>浅：约 4 条养成线</td>
+              <td>深：约 10+ 条养成线</td>
+            </tr>
+            <tr>
+              <td><b>学习价值</b></td>
+              <td>如何做减法：最小化操作但维持养成驱动力</td>
+              <td>如何做加法：多养成线并行但不失控</td>
+            </tr>
+          </table>
+
+          <p style="margin-top:12px;"><b>核心洞察：</b>两者对"轻量化战斗"的理解一致但实现不同——咸鱼之王让战斗完全后台化，三幻保留回合制演出但自动播放。共同逻辑是<b>「这类型游戏的战斗不是操作乐趣，养成结果验证才是」</b>。</p>
+
+          <a href="xianyu-vs-sanguo.html" class="btn">📄 查看完整对比 →</a>
+        </div>
+      </div>
+    </details>
+
+    <!-- 7 ── 抗战史游戏策划案 -->
+    <div class="project-card no-link">
+      <div class="thumb placeholder" style="background: linear-gradient(135deg, #3a2b26, #54382e);">
+        <span class="thumb-label">抗战史<br>策划案</span>
+      </div>
+      <div class="info">
+        <div class="name">
+          抗战史题材游戏策划案
+          <span class="badge gray">完整案可另附</span>
+        </div>
+        <div class="desc">抗战史题材游戏策划案，战斗与部队系统参考《骑马与砍杀2》，含史料考据附录。基于系统研读的党史与解放战争时期史料，以及《民兵军事训练手册》中的单兵战术动作（刺杀、投掷、夺枪、跃进）设计敌我双方的战斗动作库与掩体行为。完整策划案可另行提供。</div>
+        <div class="tags">
+          <span class="tag">题材策划</span>
+          <span class="tag">部队系统</span>
+          <span class="tag">史料考据</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════ 游戏经历 ═══════════ -->
+  <div class="section-title">游戏经历</div>
+  <details class="panel" open>
+    <summary>
+      覆盖 RPG / RTS / RTT / 战棋 / FPS / TPS / 卡牌 / 独游 · Steam 时长 2000h+
+      <span class="toggle-icon">▼</span>
+    </summary>
+    <div class="content">
+
+      <div class="cat">
+        <div class="cat-name">射击（FPS / TPS）★ 主攻品类</div>
+        <div class="game-list">
+          《CODM》267 级，累计 3 个赛季战神段位，Kar98 曾获江苏省百强 ·
+          《COD4》（60h），对其战斗演出与 AI 编排、不同难度下的敌人强度印象深刻 ·
+          《三角洲行动》（400h），大战场 S1 赛季统帅 ·
+          《合金装备5》（150h），80% 任务 S 级评价——敌人状态机复杂又真实 ·
+          《逃离鸭科夫》（80h）·《半条命》系列（50h）
+        </div>
+      </div>
+
+      <div class="cat">
+        <div class="cat-name">RTS / RTT / 战棋</div>
+        <div class="game-list">
+          《骑马与砍杀2》（95h）·《夺宝奇兵3》（50h）·《Xcom2》（40h）
+        </div>
+      </div>
+
+      <div class="cat">
+        <div class="cat-name">ARPG / 动作冒险</div>
+        <div class="game-list">
+          《赛博朋克2077》（120h）·《死亡搁浅》（150h）·《控制》（50h）·
+          《古墓丽影》系列（80h）·《刺客信条：大革命》（60h）·
+          《黑神话·悟空》（<b>全成就</b>）·《艾尔登法环》（60h）·《生化危机 7/8》（70h）
+        </div>
+      </div>
+
+      <div class="stats">
+        <span><b>Steam 时长</b> 2000h+</span>
+        <span><b>CODM</b> 3 赛季战神</span>
+        <span><b>三角洲行动</b> 大战场 S1 统帅</span>
+        <span><b>合金装备5</b> 80% 任务 S 级</span>
+        <span><b>黑神话·悟空</b> 全成就</span>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- ═══════════ 军事与史料积累 ═══════════ -->
+  <div class="section-title">军事与史料积累</div>
+  <details class="panel">
+    <summary>
+      抗战史史料研读 · 单兵战术手册 · 战斗动作库积累
+      <span class="toggle-icon">▼</span>
+    </summary>
+    <div class="content">
+
+      <div class="cat">
+        <div class="cat-name">史料研读</div>
+        <div class="game-list">
+          系统研读建党至解放战争时期史料（党史系列 18h、长征沙盘推演 7h），覆盖抗战阶段敌我态势与战例；
+          熟悉红军与八路军的军事思想、游击战与运动战原则。
+        </div>
+      </div>
+
+      <div class="cat">
+        <div class="cat-name">战术手册</div>
+        <div class="game-list">
+          精读《民兵军事训练手册》，掌握刺杀、投掷、夺枪、跃进等单兵战术动作与进攻/防御/小组配合的战斗动作，
+          熟悉发扬火力、利用地形地物的原则——<b>可直接转化为敌人与队友 AI 的动作库与掩体行为设计</b>。
+        </div>
+      </div>
+
+      <div class="cat">
+        <div class="cat-name">英雄叙事</div>
+        <div class="game-list">
+          梳理《了不起的中国人》等史料中的英雄事迹，能据史实为队友 AI 编排剧情化演出（如舍身炸碉堡），
+          <b>让战斗动作承载叙事</b>。
+        </div>
+      </div>
+
+      <div class="cat">
+        <div class="cat-name">影视参照</div>
+        <div class="game-list">
+          《得闲谨制》中日伪侦查兵的交替掩护跃进 ·
+          《我的团长我的团》中山地坑道式堡垒群防御——均为有直接借鉴价值的敌我战术与关卡形态。
+        </div>
+      </div>
+
+      <div class="highlight">
+        <b>场景设想：</b>希望能在游戏中看到——我军大部与敌正面鏖战时，镜头一转，穿插连正隐蔽机动至敌指挥所侧方山头；
+        画面随主角步伐推进，抵达山脊时摄像机迅速抬高，敌部署尽收眼底。
+      </div>
+
+    </div>
+  </details>
+
+  <!-- ═══════════ 专业技能 ═══════════ -->
+  <div class="section-title">专业技能</div>
+  <details class="panel">
+    <summary>
+      策划工具 · 引擎实现 · 设计能力
+      <span class="toggle-icon">▼</span>
+    </summary>
+    <div class="content">
+      <table style="width:100%; border-collapse:collapse; font-size:13px;">
+        <tr>
+          <td style="width:110px; padding:9px 11px; border:1px solid var(--border); background:var(--bg-muted); font-weight:700; color:var(--text);">策划工具</td>
+          <td style="padding:9px 11px; border:1px solid var(--border); color:var(--text-secondary);">慕客 RP（原型）· Xmind · Excel（数据配置）· 万兴图示（流程图）</td>
+        </tr>
+        <tr>
+          <td style="padding:9px 11px; border:1px solid var(--border); background:var(--bg-muted); font-weight:700; color:var(--text);">引擎实现</td>
+          <td style="padding:9px 11px; border:1px solid var(--border); color:var(--text-secondary);">UE5（蓝图开发 Demo）· Godot（卡牌肉鸽）</td>
+        </tr>
+        <tr>
+          <td style="padding:9px 11px; border:1px solid var(--border); background:var(--bg-muted); font-weight:700; color:var(--text);">设计能力</td>
+          <td style="padding:9px 11px; border:1px solid var(--border); color:var(--text-secondary);">战斗 AI 编排（状态机 / 行为树）· 战斗 AI 方案拆解 · 功能设计 · 数据配置 · 竞品分析</td>
+        </tr>
+        <tr>
+          <td style="padding:9px 11px; border:1px solid var(--border); background:var(--bg-muted); font-weight:700; color:var(--text);">美术 / 设计</td>
+          <td style="padding:9px 11px; border:1px solid var(--border); color:var(--text-secondary);">PS · PR</td>
+        </tr>
+        <tr>
+          <td style="padding:9px 11px; border:1px solid var(--border); background:var(--bg-muted); font-weight:700; color:var(--text);">编程</td>
+          <td style="padding:9px 11px; border:1px solid var(--border); color:var(--text-secondary);">AI 辅助编程（Claude Code / DeepSeek / GPT）</td>
+        </tr>
+        <tr>
+          <td style="padding:9px 11px; border:1px solid var(--border); background:var(--bg-muted); font-weight:700; color:var(--text);">语言</td>
+          <td style="padding:9px 11px; border:1px solid var(--border); color:var(--text-secondary);">英语四级 523 分</td>
+        </tr>
+      </table>
+    </div>
+  </details>
+
+  <!-- ═══════════ Footer ═══════════ -->
+  <div class="footer">
+    <div class="contact-links">
+      <a href="tel:17851792986">📱 17851792986</a>
+      <a href="mailto:501272096@qq.com">✉️ 501272096@qq.com</a>
+      <a href="https://github.com/MacAr4ur" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <div>李俊 · 战斗策划（战斗AI编排方向） · 南通大学 2027届</div>
+  </div>
+
+</div>
+
+</body>
+</html>

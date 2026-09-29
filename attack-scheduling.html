@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>《战斗 AI 的攻击调度》拆解 · 李俊作品集</title>
+<meta name="description" content="拆解《Kingdoms of Amalur》中超越「功夫圈」的网格容量攻击调度系统，并给出 UE5 落点。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+  <div class="topbar">
+    <a href="index.html">← 返回作品集</a>
+  </div>
+
+  <article class="article">
+    <h1>战斗 AI 的攻击调度：超越功夫圈</h1>
+    <p class="subtitle">个人独立 · 2026.09 · 主要参考：Michael Dawe, "Beyond the Kung-Fu Circle", <i>Game AI Pro</i> Ch.28</p>
+
+    <img class="narrow" src="diagrams/攻击调度流程.svg" alt="攻击调度流程图：从功夫圈到网格容量调度">
+    <p class="fig-cap">攻击调度流程示意</p>
+
+    <h2>一、问题：群体围攻时如何控制攻击节奏</h2>
+    <p>
+      动作游戏在难度与挑战上有一组固有矛盾。遭遇战（encounter）里常有多个敌人围攻玩家，
+      这从设计角度往往是需要的——为了拉长战斗时长，或出于叙事需求。
+      但<b>同时攻击的敌人一多，新手玩家会直接被淹没</b>，所以这类游戏普遍限制敌人一次只能上一个。
+    </p>
+    <p>
+      朴素解法是"一次只允许一个敌人攻击"。这套做法有个形象的名字：<b>功夫圈（Kung-Fu Circle）</b>——
+      取自功夫片里主角被几十个敌人围住、但敌人永远一个一个上的经典场面。
+    </p>
+
+    <h3>关于「圈」字的来源</h3>
+    <p>
+      原文明确说这个命名取的是<b>那个画面</b>——主角站在中间，敌人围成一圈；不是在说攻击的"循环"。
+      中文里描述同一机制的现成说法是<b>车轮战</b>。所以更完整的对照是：
+    </p>
+    <table>
+      <tr><th style="width:34%;">说法</th><th>强调什么</th></tr>
+      <tr><td>功夫圈（Kung-Fu Circle）</td><td>源术语，取"敌人围成一圈"的画面意象</td></tr>
+      <tr><td>车轮战</td><td>中文现成词，取"轮流上、不一起上"的机制</td></tr>
+    </table>
+
+    <p>
+      功夫圈实现简单，在"希望玩家专注单个对手"的游戏里是合理的。但它的限制在快节奏战斗里太严：
+    </p>
+    <ul>
+      <li>战斗节奏被拖慢，玩家缺少爽快感</li>
+      <li>玩家没有机会使用<b>大范围攻击（AOE, area of effect）</b>——因为敌人从不扎堆</li>
+    </ul>
+    <p>
+      为此需要放宽限制，允许多个敌人同时攻击。<b>但直接改成"允许 2～3 个同时上"是错的</b>——
+      它完全不考虑敌人类型差异和攻击强度差异：一个巨魔的冲锋和杂兵的挥剑，显然不该被同等对待。
+    </p>
+    <p>《Kingdoms of Amalur: Reckoning》给出了一套解决方案。</p>
+
+    <h2>二、Belgian AI：网格与容量</h2>
+    <p>
+      Reckoning 内部把这套系统叫 <b>Belgian AI</b>——得名于描述算法时画的华夫饼（waffle）草图：
+      网格槽位看起来像格子松饼。
+    </p>
+    <p>核心思想：<b>每个角色身上随身携带一个网格（grid）</b>。</p>
+    <ul>
+      <li>网格以角色为中心、<b>与世界坐标轴对齐</b>（world-space aligned，不随角色朝向旋转）</li>
+      <li>共 <b>8 个空槽位（slot）</b>，像井字棋（tic-tac-toe）棋盘，角色位于中心</li>
+      <li>网格存储两个变量：<b>网格容量（grid capacity）</b>与<b>攻击容量（attack capacity）</b>
+        <ul>
+          <li>网格容量限制<b>同时能攻击的角色数量</b></li>
+          <li>攻击容量限制<b>这些角色能使用的攻击数量与类型</b></li>
+        </ul>
+      </li>
+    </ul>
+    <p>
+      每个生物（creature）有一个 <b>网格权重（grid weight）</b>，即它占用他人网格槽位的成本；
+      每个攻击有一个 <b>攻击权重（attack weight）</b>。两条规则：
+    </p>
+    <blockquote>
+      <p>正在攻击某角色的所有生物，其网格权重总和必须小于该角色的网格容量；</p>
+      <p>正在对该角色使用的所有攻击，其攻击权重总和必须小于该角色的攻击容量。</p>
+    </blockquote>
+
+    <h3>2.1 运转实例</h3>
+    <p>设玩家的网格容量为 12：</p>
+    <table>
+      <tr><th style="width:14%;">步骤</th><th>事件</th><th style="width:14%;">权重</th><th style="width:20%;">剩余网格容量</th></tr>
+      <tr><td>1</td><td>士兵请求攻击，权重 4</td><td>4</td><td>12 − 4 = 8</td></tr>
+      <tr><td>2</td><td>巨魔请求攻击，权重 8</td><td>8</td><td>8 − 8 = 0</td></tr>
+      <tr><td>3</td><td>第二名士兵请求，权重 4</td><td>4</td><td>4 &gt; 0，<b>拒绝</b>，只能在网格外等待</td></tr>
+    </table>
+
+    <p>继续看攻击容量的作用。设玩家攻击容量为 10：</p>
+    <table>
+      <tr><th style="width:14%;">步骤</th><th>事件</th><th style="width:14%;">权重</th><th style="width:20%;">剩余攻击容量</th></tr>
+      <tr><td>1</td><td>巨魔从「冲锋(6)」与「挥棒(4)」中选择冲锋</td><td>6</td><td>10 − 6 = 4</td></tr>
+      <tr><td>2</td><td>士兵有「突刺(5)」与「剑挥(3)」；突刺 5 &gt; 4 用不了</td><td>—</td><td>—</td></tr>
+      <tr><td>3</td><td>士兵改用剑挥</td><td>3</td><td>4 − 3 = 1</td></tr>
+    </table>
+
+    <blockquote>
+      <p><b>注意第 2 步：</b>士兵不是被禁止攻击，而是<b>被限制只能用"便宜"的攻击</b>。
+      这是这套系统区别于简单计数的关键——<b>它压的是攻击强度，不只是数量</b>。</p>
+    </blockquote>
+
+    <h3>2.2 舞台管理器（The Stage Manager）</h3>
+    <p>
+      个体生物<b>不做任何空间推理</b>（spatial reasoning）。
+      所有定位与槽位分配由一个集中式 AI 负责，称为<b>舞台管理器（stage manager）</b>。流程：
+    </p>
+    <ol>
+      <li>士兵察觉玩家，向舞台管理器<b>注册攻击请求</b>并等待</li>
+      <li>舞台管理器在下一帧处理请求，比对士兵网格权重与玩家当前剩余网格容量</li>
+      <li>通过则分配<b>最近的可用槽位</b>，并扣减剩余容量</li>
+      <li>士兵获得接近并攻击的<b>许可（permission）</b></li>
+    </ol>
+    <p>集中化是这个设计最重要的工程决策，第六节会看到它带来的全部好处。</p>
+
+    <h2>三、三层同心圆</h2>
+    <p>
+      网格槽位虽然叫"网格"，但本质上定义的是<b>与玩家等距的若干位置</b>，围成一个圆。
+      Reckoning 进一步把它分成内外两层，加上圈外，形成三个半径：
+    </p>
+    <table>
+      <tr><th style="width:18%;">区域</th><th style="width:30%;">名称</th><th>谁在这里</th></tr>
+      <tr><td>内圈</td><td>攻击圈（attack circle）</td><td><b>只有已获准使用某个具体攻击</b>的生物</td></tr>
+      <tr><td>外圈</td><td>接近圈（approach circle）</td><td>已通过网格容量检查、获准接近，但还没获准具体攻击</td></tr>
+      <tr><td>圈外</td><td>—</td><td>未通过网格容量检查，等待机会</td></tr>
+    </table>
+    <p>攻击圈的半径由<b>近战攻击（melee attack）的最小/最大距离</b>定义。</p>
+    <p>
+      这个分层对玩家体验的价值：<b>玩家一眼就能判断谁是当前的直接威胁</b>。这比任何 UI 提示都有效。
+    </p>
+
+    <h2>四、行为集成（Behavior Integration）</h2>
+    <p>
+      为配合网格系统，Reckoning 的生物共享一组通用行为，同时提高了<b>行为复用率（behavior reuse）</b>——
+      任何能近战攻击的生物都共用这套行为集。四条规则：
+    </p>
+    <ol>
+      <li>
+        <b>已进入外圈但无攻击许可的生物，必须尽快离开圈。</b>
+        价值有二：让玩家清楚哪些敌人在攻击；防止怪物在真正攻击时互相挡路。
+      </li>
+      <li>
+        <b>圈外等待者会被分配一个未被占用的槽位位置，并站到该槽位前方</b>（即使没有攻击许可）。
+        结果是<b>自然形成包抄（flanking）</b>——而且任何生物都不需要知道其他生物的存在。
+        这是整个设计里最优雅的一处：<b>包抄不需要"包抄行为"，它是定位规则的副产物</b>。
+      </li>
+      <li>
+        <b>攻击发起后立即把槽位交还（relinquish）舞台管理器。</b>
+        舞台管理器据此排队轮换，保证生物不断进出近战范围，<b>单个生物无法垄断（monopolize）攻击机会</b>。
+      </li>
+      <li>
+        <b>生物数量少时</b>，交出槽位的生物可以立刻被重新分配，不产生空窗。
+      </li>
+    </ol>
+
+    <h2>五、难度缩放（Difficulty Scaling）</h2>
+    <p>这是这套系统最实用的性质：<b>难度完全由两个数字控制</b>。</p>
+    <table>
+      <tr><th style="width:34%;">调整项</th><th>效果</th></tr>
+      <tr><td>提高网格容量</td><td>更多生物能围住玩家</td></tr>
+      <tr><td>提高攻击容量</td><td>更多生物能同时攻击，且能用更强的攻击</td></tr>
+    </table>
+    <p>
+      关键在于：<b>完全不用改动每个生物精心平衡过的个体权重配置</b>。
+      策划只需调整玩家侧的两个容量值，就能为多个难度等级生成不同的遭遇战，而所有生物的数据保持不变。
+    </p>
+
+    <h2>六、工程细节：槽位动态重分配</h2>
+    <p>
+      网格是世界对齐的，随玩家移动。这带来一个问题：
+      玩家翻滚躲开攻击后，生物此前被分配的槽位可能不再是最优的。
+    </p>
+    <p><b>解法：舞台管理器拥有槽位的完全分配权。</b></p>
+    <ul>
+      <li>生物<b>从不记忆</b>自己的槽位，每帧向舞台管理器查询当前分配</li>
+      <li>空网格时，优先分配给距离最近的生物</li>
+      <li>已占用时，舞台管理器可以重新洗牌——把许可从 A 转给 B（steal 机制）</li>
+    </ul>
+    <p>
+      一个具体场景：玩家原被巨魔和士兵围攻，第二名士兵在圈外等待。
+      若玩家突然朝第二名士兵移动，舞台管理器应当<b>把攻击许可从第一名士兵转移给第二名</b>。
+    </p>
+    <p>
+      <b>实际调参的取舍：</b>倾向于不动已有许可的生物，除非出现"获准者已在攻击网格外、
+      而某个未获准者已进入网格范围"的情况。重分配的目标是<b>最小化所有生物到达目标位置的总行进时间</b>。
+    </p>
+    <p>
+      <b>槽位锁定（lock）：</b>正在发起攻击的生物会锁定自己的分配，
+      防止攻击过程中被抢走槽位而<b>意外冲爆玩家的攻击容量</b>。
+    </p>
+    <p>分配算法伪代码（pseudocode）：</p>
+<pre style="background:var(--bg-muted); border:1px solid var(--border); border-radius:6px; padding:14px 16px; font-size:12.5px; line-height:1.7; overflow-x:auto; color:var(--text-secondary);">Attacking list = 所有正在攻击的生物
+
+For each creature in Attacking list:
+    slot = 为 creature 查找最近的槽位
+    If slot 已锁定:
+        continue
+    将 slot 分配给 creature
+    从 Attacking list 移除 creature
+    If slot 原本已有归属:
+        解除该生物对 slot 的占用</pre>
+
+    <h2>七、工程细节：攻击种类限制</h2>
+    <p>
+      攻击容量只管<b>总量</b>，不管<b>种类</b>。在高难度下（攻击容量被调高），
+      或者遭遇战里同种生物特别多时，会出现大量同类型攻击同时释放的问题——比如一堆范围攻击同时砸下来。
+    </p>
+    <p>Reckoning 的补充手段是<b>三层冷却（cooldown）</b>：</p>
+    <table>
+      <tr><th style="width:34%;">层级</th><th>作用范围</th></tr>
+      <tr><td>个体级（individual）</td><td>单个生物的特定攻击冷却</td></tr>
+      <tr><td>生物种类级（creature-wide）</td><td>同一类型生物共享的攻击冷却</td></tr>
+      <tr><td>全局级（global）</td><td>整场战斗范围内该攻击的冷却</td></tr>
+    </table>
+    <p>
+      这对最高难度下的平衡作用极大——即使攻击容量被提高，
+      也能阻止特定敌人同时释放过多 AOE 攻击。
+    </p>
+
+    <h2>八、设计要点总结</h2>
+    <ol>
+      <li><b>难度是可缩放的数据，不是写死的行为。</b>两个容量值 + 每个生物一组权重，覆盖全部难度曲线</li>
+      <li><b>权重让"强度"参与调度，而非只是"数量"。</b>判定的是加权总量，所以强敌天然挤占弱敌的机会，不需要额外规则</li>
+      <li><b>定位逻辑集中化</b>是这套算法的真正强项。个体生物只负责"执行我拿到的许可"，不思考全局</li>
+      <li><b>包抄是规则副产物。</b>等待者被分配到空缺槽位前方——没有任何"包抄"代码，行为自然<b>涌现（emergent behavior）</b></li>
+      <li><b>攻击完立即交还槽位</b>，保证轮换公平，防止单个敌人垄断输出窗口</li>
+    </ol>
+    <p>
+      原作者在结论中明确指出：这套算法可简单与<b>影响力图（influence map）</b>技术结合，
+      让角色更自然地避让与在世界中移动；网格槽位的概念也可与其它战术技术自由组合。
+      真正的价值不在实现难度，而在<b>定位逻辑集中化带来的灵活度</b>。
+    </p>
+
+    <h2>九、与 UE5 的对应实现</h2>
+    <p>这套系统的三层结构在 UE5 里都有落点：</p>
+    <table>
+      <tr><th style="width:44%;">本文机制</th><th>UE5 对应</th></tr>
+      <tr>
+        <td>舞台管理器</td>
+        <td>一个独立的 Manager Actor（或 GameMode 上的子系统），持有网格与容量状态</td>
+      </tr>
+      <tr>
+        <td>槽位位置计算</td>
+        <td>EQS（Environment Query System，环境查询系统）：以玩家为中心，查询等距可用位点</td>
+      </tr>
+      <tr>
+        <td>个体行为（离开外圈、站到槽位前）</td>
+        <td>行为树（Behavior Tree）里的 Move To 任务，条件由黑板键（Blackboard key）驱动</td>
+      </tr>
+      <tr>
+        <td>攻击请求与许可</td>
+        <td>黑板键（是否有攻击许可）或 Gameplay Tag</td>
+      </tr>
+      <tr>
+        <td>攻击权重与冷却</td>
+        <td>Gameplay Ability System（GAS）的 Cost 与 Cooldown</td>
+      </tr>
+    </table>
+    <p>
+      一个最小实现路径：先在 BT 里给敌人加一个"请求攻击许可"的任务节点，向 Manager 注册；
+      Manager 每帧统一分配并在黑板上写回许可与目标槽位；敌人据此执行 Move To 或攻击。
+    </p>
+    <blockquote>
+      <p><b>关键是不要让敌人在自己的行为树里做全局空间判断</b>——那是这套设计要避免的头号错误。</p>
+    </blockquote>
+
+    <h2>延伸阅读</h2>
+    <ul>
+      <li>Michael Dawe, "Beyond the Kung-Fu Circle: A Flexible System for Managing NPC Attacks", <i>Game AI Pro</i>, Chapter 28（全文免费，gameaipro.com）</li>
+      <li>同作者另撰有 <i>Game AI Pro</i> Chapter 7 "Real-World Behavior Trees in Script"，可对照阅读</li>
+      <li>Michael Dawe 后任职于 Bungie，其行为树实践也见于《Destiny》系列相关分享</li>
+      <li>影响力图（influence map）技术参见 <i>Game AI Pro</i> 及 <i>Game AI Pro 3</i> 相关章节</li>
+    </ul>
+
+    <div style="margin-top:34px; padding-top:20px; border-top:1px solid var(--border);">
+      <a href="index.html" class="btn ghost" style="margin-left:0;">← 返回作品集</a>
+      <a href="resister-pv.html" class="btn">📄 延伸阅读：《抵抗者》PV 改进方案 →</a>
+    </div>
+  </article>
+
+</div>
+
+</body>
+</html>
